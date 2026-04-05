@@ -109,18 +109,18 @@ PORT = 8010
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    server_socket.bind((    ,     ))
+    server_socket.bind((,))
     server_socket.listen(5)
 
     print(f"Server running on http://{HOST}:{PORT}")
 
     while True:
-        client_socket, client_address = server_socket.          # ulanishni qabul qilish
-        
+        client_socket, client_address = server_socket.  # ulanishni qabul qilish
+
         request = client_socket.recv(4096)
         response = handel_request(request)
         client_socket.sendall(response.encode())
-        client_socket.         # ulanishni yopish
+        client_socket.  # ulanishni yopish
 
 
 if __name__ == '__main__':
