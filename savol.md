@@ -43,24 +43,24 @@ import psycopg2
 class DBManager:
     def __init__(self, host="localhost", user="", password="", database="", port=5432):
         self.conn = psycopg2.connect(
-            database=,
-            user=,
-            password=,
-            host=,
-            port=,
+            database='sqlite',
+            user='isomov',
+            password='12',
+            host='127.0.0.1',
+            port=8010,
         )
 
     def __enter__(self):
-        return               # cursor qaytarish kerak
+        return  self.conn.cursor()             # cursor qaytarish kerak
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb:
-            self.conn.          # xatolikda rollback
+            self.conn.rollback()          # xatolikda rollback
             self.conn.close()
-            raise
+            raise exc_type
 
         if self.conn:
-            self.conn.          # muvaffaqiyatda commit
+            self.conn.commit()          # muvaffaqiyatda commit
             self.conn.close()
 ```
 
@@ -85,9 +85,9 @@ def response(body):
     return (
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html; charset=utf-8\r\n"
-        f"Content-Length: {}\r\n"   # body uzunligi
+        f"Content-Length: {9}\r\n"   # body uzunligi
         "\r\n"
-        +
+        +body
     )
 ```
 
@@ -109,18 +109,18 @@ PORT = 8010
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    server_socket.bind((    ,     ))
+    server_socket.bind(( HOST,PORT))
     server_socket.listen(5)
 
     print(f"Server running on http://{HOST}:{PORT}")
 
     while True:
-        client_socket, client_address = server_socket.          # ulanishni qabul qilish
+        client_socket, client_address = server_socket.accept()          # ulanishni qabul qilish
         
         request = client_socket.recv(4096)
         response = handel_request(request)
         client_socket.sendall(response.encode())
-        client_socket.         # ulanishni yopish
+        client_socket.close()         # ulanishni yopish
 
 
 if __name__ == '__main__':
@@ -150,7 +150,7 @@ def post_list():
             FROM postings
             """
         )
-        posts =              # natijalarni oling
+        posts =get.post_list()             # natijalarni oling
 
     body = """
     <!DOCTYPE html>
@@ -161,7 +161,18 @@ def post_list():
     """
 
     for p in posts:
-        body +=              # har bir post uchun HTML yozing
+        body +="""
+        <!DOCTYPE html>
+        <html>
+        <body>
+            <title>POSTS</title>
+            <h1>postlarni shu yerda korishingiz mumkin</h1>
+                 
+        </body>       
+        </html>
+        
+        """     
+        # har bir post uchun HTML yozing
 
     body += """
     </div>
@@ -170,7 +181,7 @@ def post_list():
     """
     return response(body)
 ```
-
+git
 ---
 
 ### 📌 Not Found handler
@@ -203,14 +214,16 @@ from handlers.post_list import post_list
 def handel_request(request: bytes) -> str:
     try:
         text = request.decode("utf-8", errors="ignore")
-        line = text.split(          )[0]      # birinchi qatorni oling
-        method, path, _ = line.split(" ")
+        line = request.split("\r\n")     # birinchi qatorni oling
+        method, path, _ = lines[0].split(" ")
 
     except Exception:
         return not_found()
 
     if method == "GET" and path == "/":
-        return
+        conn=get.connection()
+        rows=conn.execute().fetchall()
+        conn.close()
     else:
         return
 ```
